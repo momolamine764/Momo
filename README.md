@@ -1,0 +1,1 @@
+Personne retraitée, méthodique et très disponible, je souhaite mettre mon expérience et mon sérieux au service de votre plateforme. Soucieux du travail bien fait, je m'engage à exécuter chaque micro-tâche avec rigueur, précision et dans le respect strict des consignes.
