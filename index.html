@@ -20,8 +20,6 @@
     </script>
 </head>
 <body class="bg-brand-dark text-white min-h-screen font-sans antialiased flex flex-col justify-between">
-<input type="text" id="mm-phone" value="0719604802" class="...">
-<input type="text" id="mm-phone" placeholder="Ex: +225 0700000000" class="...">
 
     <!-- En-tête -->
     <header class="bg-black/80 backdrop-blur sticky top-0 z-50 border-b border-zinc-800 px-4 py-3 flex justify-between items-center">
@@ -142,7 +140,8 @@
                     </div>
                 </div>
 
-                <video id="video-player" class="w-full h-full" controls></video>
+                <!-- Ajout des attributs crossorigin et playsinline pour éviter les blocages -->
+                <video id="video-player" class="w-full h-full" controls playsinline crossorigin="anonymous"></video>
             </div>
         </div>
     </div>
@@ -176,7 +175,7 @@
                 </div>
                 <div>
                     <label class="block text-xs text-zinc-400 mb-1">Numéro de téléphone</label>
-                    <input type="text" id="mm-phone" placeholder="Ex: +225 0700000000" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-brand-500">
+                    <input type="text" id="mm-phone" value="0719604802" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-brand-500">
                 </div>
             </div>
 
@@ -205,7 +204,7 @@
         }
 
         function clickAdBanner() {
-            userBalance += 50; // +50 FCFA par clic sur la bannière pub
+            userBalance += 50;
             updateBalanceDisplay();
             alert("Publicité consultée ! +50 FCFA ajoutés à vos gains.");
         }
@@ -218,9 +217,10 @@
             
             modal.classList.remove('hidden');
             adOverlay.classList.remove('hidden');
+            
             video.src = videoUrl;
+            video.load();
 
-            // Compte à rebours pub 5 secondes
             let timeLeft = 5;
             document.getElementById('ad-countdown').innerText = timeLeft;
             document.getElementById('ad-progress').style.width = '100%';
@@ -233,9 +233,14 @@
                 if (timeLeft <= 0) {
                     clearInterval(countdownTimer);
                     adOverlay.classList.add('hidden');
-                    video.play();
                     
-                    // Créditer des gains à chaque vue de film (grâce aux annonceurs)
+                    // Gestion sécurisée de la lecture automatique
+                    video.play().catch(error => {
+                        console.warn("Lecture auto bloquée, passage en muet forcé :", error);
+                        video.muted = true;
+                        video.play();
+                    });
+                    
                     userBalance += 100;
                     updateBalanceDisplay();
                 }
@@ -260,291 +265,6 @@
 
         function saveConfig() {
             const phone = document.getElementById('mm-phone').value;
-            if(!phone) {
-                alert("Veuillez entrer votre numéro de téléphone.");
-                return;
-            }
-            localStorage.setItem('cineverse_phone', phone);
-            alert("Compte Mobile Money enregistré avec succès !");
-            closeWallet();
-        }
-
-        function requestPayout() {
-            if(userBalance < 5000) {
-                alert("Le solde minimum pour effectuer un retrait est de 5 000 FCFA.");
-            } else {
-                alert("Demande de retrait transmise avec succès vers votre compte Mobile Money !");
-                userBalance = 0;
-                updateBalanceDisplay();
-            }
-        }
-    </script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="fr" class="dark">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cineverse - Streaming Gratuit</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        brand: { 500: '#e50914', 600: '#b20710', dark: '#141414', card: '#1f1f1f' }
-                    }
-                }
-            }
-        }
-    </script>
-</head>
-<body class="bg-brand-dark text-white min-h-screen font-sans antialiased flex flex-col justify-between">
-
-    <!-- En-tête -->
-    <header class="bg-black/80 backdrop-blur sticky top-0 z-50 border-b border-zinc-800 px-4 py-3 flex justify-between items-center">
-        <div class="flex items-center space-x-2">
-            <span class="text-brand-500 font-black text-2xl tracking-wider">CINEVERSE</span>
-            <span class="text-xs bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded">Gratuit 100%</span>
-        </div>
-        <button onclick="openWallet()" class="bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded-full text-sm font-medium flex items-center space-x-2 transition">
-            <i class="fa-solid fa-wallet text-yellow-400"></i>
-            <span id="header-balance">0 FCFA</span>
-        </button>
-    </header>
-
-    <!-- Contenu Principal -->
-    <main class="max-w-4xl mx-auto px-4 py-6 flex-grow w-full">
-        
-        <!-- Bannière Pub Haut -->
-        <div class="bg-gradient-to-r from-zinc-900 to-zinc-800 border border-zinc-800 rounded-xl p-4 mb-6 text-center cursor-pointer hover:border-brand-500 transition shadow-lg" onclick="clickAdBanner()">
-            <div class="text-xs uppercase tracking-widest text-brand-500 font-bold mb-1"><i class="fa-solid fa-ad"></i> Espace Sponsorisé (Générateur de revenus)</div>
-            <p class="text-sm text-zinc-300">Cliquez ici pour découvrir nos partenaires et soutenir la gratuité de Cineverse !</p>
-        </div>
-
-        <h1 class="text-xl font-bold mb-4 text-zinc-100 flex items-center justify-between">
-            <span>Films & Séries Populaires</span>
-            <span class="text-xs text-zinc-400 font-normal">Accès libre & illimité</span>
-        </h1>
-
-        <!-- Liste des Films -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            
-            <!-- Film 1 -->
-            <div class="bg-brand-card rounded-xl overflow-hidden border border-zinc-800 flex flex-col justify-between shadow-md">
-                <div class="p-4">
-                    <div class="flex justify-between items-start mb-2">
-                        <h3 class="font-bold text-lg text-white">Kuroko & La Victoire Finale</h3>
-                        <span class="text-[10px] bg-red-600/20 text-red-400 px-2 py-0.5 rounded font-bold">HD</span>
-                    </div>
-                    <p class="text-xs text-zinc-400 mb-4">Animation / Action - Japon</p>
-                </div>
-                <div class="px-4 pb-4">
-                    <button onclick="playMovie('Kuroko & La Victoire Finale', 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4')" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-medium py-2 rounded-lg text-sm transition flex items-center justify-center space-x-2">
-                        <i class="fa-solid fa-play"></i>
-                        <span>Regarder Gratuitement</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Film 2 -->
-            <div class="bg-brand-card rounded-xl overflow-hidden border border-zinc-800 flex flex-col justify-between shadow-md">
-                <div class="p-4">
-                    <div class="flex justify-between items-start mb-2">
-                        <h3 class="font-bold text-lg text-white">Le Royaume de la Forêt Noire</h3>
-                        <span class="text-[10px] bg-red-600/20 text-red-400 px-2 py-0.5 rounded font-bold">HD</span>
-                    </div>
-                    <p class="text-xs text-zinc-400 mb-4">Aventure / Mystère - Allemagne</p>
-                </div>
-                <div class="px-4 pb-4">
-                    <button onclick="playMovie('Le Royaume de la Forêt Noire', 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4')" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-medium py-2 rounded-lg text-sm transition flex items-center justify-center space-x-2">
-                        <i class="fa-solid fa-play"></i>
-                        <span>Regarder Gratuitement</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Film 3 -->
-            <div class="bg-brand-card rounded-xl overflow-hidden border border-zinc-800 flex flex-col justify-between shadow-md">
-                <div class="p-4">
-                    <div class="flex justify-between items-start mb-2">
-                        <h3 class="font-bold text-lg text-white">Le Petit Samouraï</h3>
-                        <span class="text-[10px] bg-red-600/20 text-red-400 px-2 py-0.5 rounded font-bold">HD</span>
-                    </div>
-                    <p class="text-xs text-zinc-400 mb-4">Drame / Historique - Japon</p>
-                </div>
-                <div class="px-4 pb-4">
-                    <button onclick="playMovie('Le Petit Samouraï', 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4')" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-medium py-2 rounded-lg text-sm transition flex items-center justify-center space-x-2">
-                        <i class="fa-solid fa-play"></i>
-                        <span>Regarder Gratuitement</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Film 4 -->
-            <div class="bg-brand-card rounded-xl overflow-hidden border border-zinc-800 flex flex-col justify-between shadow-md">
-                <div class="p-4">
-                    <div class="flex justify-between items-start mb-2">
-                        <h3 class="font-bold text-lg text-white">L'Odyssée Spatiale</h3>
-                        <span class="text-[10px] bg-red-600/20 text-red-400 px-2 py-0.5 rounded font-bold">HD</span>
-                    </div>
-                    <p class="text-xs text-zinc-400 mb-4">Science-Fiction - International</p>
-                </div>
-                <div class="px-4 pb-4">
-                    <button onclick="playMovie('L\'Odyssée Spatiale', 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4')" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-medium py-2 rounded-lg text-sm transition flex items-center justify-center space-x-2">
-                        <i class="fa-solid fa-play"></i>
-                        <span>Regarder Gratuitement</span>
-                    </button>
-                </div>
-            </div>
-
-        </div>
-    </main>
-
-    <!-- Modal Lecteur & Pub Pré-roll -->
-    <div id="player-modal" class="fixed inset-0 bg-black/90 z-50 hidden flex flex-col items-center justify-center p-4">
-        <div class="w-full max-w-3xl bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800 relative shadow-2xl">
-            <div class="p-3 bg-black flex justify-between items-center border-b border-zinc-800">
-                <span id="modal-title" class="font-bold text-sm">Chargement...</span>
-                <button onclick="closePlayer()" class="text-zinc-400 hover:text-white px-2 py-1 text-sm"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            
-            <!-- Écran Vidéo / Pub -->
-            <div class="relative aspect-video bg-black flex items-center justify-center">
-                <!-- Pub pré-roll avant lecture -->
-                <div id="ad-overlay" class="absolute inset-0 bg-zinc-950 flex flex-col items-center justify-center z-20 p-6 text-center">
-                    <div class="text-brand-500 font-bold mb-2 text-sm"><i class="fa-solid fa-bullhorn"></i> Publicité Sponsorisée</div>
-                    <p class="text-xs text-zinc-300 mb-4">Votre film gratuit se lance dans <span id="ad-countdown" class="font-bold text-white text-lg">5</span> secondes...</p>
-                    <div class="w-48 bg-zinc-800 h-1.5 rounded-full overflow-hidden">
-                        <div id="ad-progress" class="bg-brand-500 h-full w-full transition-all duration-1000"></div>
-                    </div>
-                </div>
-
-                <video id="video-player" class="w-full h-full" controls></video>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Tableau de Bord / Mobile Money -->
-    <div id="wallet-modal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-md w-full shadow-2xl">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="font-bold text-lg flex items-center space-x-2">
-                    <i class="fa-solid fa-wallet text-yellow-400"></i>
-                    <span>Mes Gains & Mobile Money</span>
-                </h3>
-                <button onclick="closeWallet()" class="text-zinc-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            
-            <div class="bg-black/50 border border-zinc-800 rounded-xl p-4 mb-4 text-center">
-                <p class="text-xs text-zinc-400 uppercase tracking-wider mb-1">Solde Total Gagné</p>
-                <div id="wallet-amount" class="text-3xl font-black text-yellow-400">0 FCFA</div>
-                <p class="text-[11px] text-zinc-500 mt-1">Généré automatiquement par les vues et publicités</p>
-            </div>
-
-            <div class="space-y-3 mb-4">
-                <div>
-                    <label class="block text-xs text-zinc-400 mb-1">Réseau Mobile Money</label>
-                    <select id="mm-network" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-brand-500">
-                        <option value="Wave">Wave</option>
-                        <option value="Orange Money">Orange Money</option>
-                        <option value="MTN MoMo">MTN MoMo</option>
-                        <option value="Moov Money">Moov Money</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs text-zinc-400 mb-1">Numéro de téléphone</label>
-                    <input type="text" id="mm-phone" placeholder="Ex: +225 0700000000" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-brand-500">
-                </div>
-            </div>
-
-            <button onclick="saveConfig()" class="w-full bg-green-600 hover:bg-green-500 text-white font-medium py-2.5 rounded-lg text-sm transition mb-2">
-                Enregistrer mon compte
-            </button>
-            <button onclick="requestPayout()" class="w-full bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-medium py-2 rounded-lg text-xs transition">
-                Demander un retrait des gains
-            </button>
-        </div>
-    </div>
-
-    <!-- Pied de page -->
-    <footer class="border-t border-zinc-800 text-center py-4 text-xs text-zinc-500">
-        Cineverse &copy; 2026 - Tous droits réservés (Streaming Entièrement Gratuit)
-    </footer>
-
-    <script>
-        let userBalance = localStorage.getItem('cineverse_balance') ? parseInt(localStorage.getItem('cineverse_balance')) : 0;
-        updateBalanceDisplay();
-
-        function updateBalanceDisplay() {
-            document.getElementById('header-balance').innerText = userBalance + ' FCFA';
-            document.getElementById('wallet-amount').innerText = userBalance + ' FCFA';
-            localStorage.setItem('cineverse_balance', userBalance);
-        }
-
-        function clickAdBanner() {
-            userBalance += 50; // +50 FCFA par clic sur la bannière pub
-            updateBalanceDisplay();
-            alert("Publicité consultée ! +50 FCFA ajoutés à vos gains.");
-        }
-
-        function playMovie(title, videoUrl) {
-            document.getElementById('modal-title').innerText = title;
-            const modal = document.getElementById('player-modal');
-            const adOverlay = document.getElementById('ad-overlay');
-            const video = document.getElementById('video-player');
-            
-            modal.classList.remove('hidden');
-            adOverlay.classList.remove('hidden');
-            video.src = videoUrl;
-
-            // Compte à rebours pub 5 secondes
-            let timeLeft = 5;
-            document.getElementById('ad-countdown').innerText = timeLeft;
-            document.getElementById('ad-progress').style.width = '100%';
-
-            let countdownTimer = setInterval(() => {
-                timeLeft--;
-                document.getElementById('ad-countdown').innerText = timeLeft;
-                document.getElementById('ad-progress').style.width = (timeLeft * 20) + '%';
-
-                if (timeLeft <= 0) {
-                    clearInterval(countdownTimer);
-                    adOverlay.classList.add('hidden');
-                    video.play();
-                    
-                    // Créditer des gains à chaque vue de film (grâce aux annonceurs)
-                    userBalance += 100;
-                    updateBalanceDisplay();
-                }
-            }, 1000);
-        }
-
-        function closePlayer() {
-            const modal = document.getElementById('player-modal');
-            const video = document.getElementById('video-player');
-            video.pause();
-            video.src = '';
-            modal.classList.add('hidden');
-        }
-
-        function openWallet() {
-            document.getElementById('wallet-modal').classList.remove('hidden');
-        }
-
-        function closeWallet() {
-            document.getElementById('wallet-modal').classList.add('hidden');
-        }
-
-        function saveConfig() {
-            const phone = document.getElementById('mm-phone').value;
-            if(!phone) {
-                alert("Veuillez entrer votre numéro de téléphone.");
-                return;
-            }
             localStorage.setItem('cineverse_phone', phone);
             alert("Compte Mobile Money enregistré avec succès !");
             closeWallet();
